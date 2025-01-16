@@ -1,0 +1,3886 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="room-management.css" rel="stylesheet">
+    <link href="dm.css" rel="stylesheet">
+    <link href="big-profile.css" rel="stylesheet">
+
+    <link href="room-details.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --background-color: #FFFFFF;
+            --button-color: #F8F9FA;
+            --username-color: #1F1F1F;
+            --button-text-color: #1F1F1F;
+            --message-text-color: #474747;
+            --input-background-color: #ffffff;
+            --input-border-color: #DADCE0;
+            --button-border-color: #DADCE0;
+            --nav-background: #F8F9FA;
+            --modal-background: #FFFFFF;
+            --sidebar-width: 250px;
+            --nav-height: 48px;
+            --tab-active-color: #1496bb;
+
+            /* for background image */
+            --text-background-light: rgba(255, 255, 255, 0.8);
+        }
+
+        body.dark {
+            --background-color: #202124;
+            --button-color: #303134;
+            --username-color: #E8E8E8;
+            --button-text-color: #E8E8E8;
+            --message-text-color: #BFBFBF;
+            --input-background-color: #5F6368;
+            --button-border-color: #5F6368;
+            --input-border-color: #5F6368;
+            --nav-background: #303134;
+            --modal-background: #202124;
+
+            /* for background color */
+            --text-background-light: rgba(32, 33, 36, 0.8);
+        }
+
+
+
+
+        .username.bg-image-text,
+        .message-body.bg-image-text {
+            background-color: var(--text-background-light);
+            display: inline-block;
+            margin: 0;
+            padding-left: 5px;
+            padding-right: 5px;
+            /* Remove any margins */
+        }
+
+        .message-body.bg-image-text {
+            border-bottom-left-radius: 10px;
+            border-top-left-radius: 0;
+            border-bottom-right-radius: 10px;
+            border-top-right-radius: 10px;
+            padding-bottom: 5px;
+        }
+
+        .username.bg-image-text {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 10px;
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 10px;
+        }
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            background-color: var(--background-color);
+            color: var(--message-text-color);
+            transition: background-color 0.3s, color 0.3s;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+
+        /* Progress bar container */
+        .progress-bar-container {
+            width: 100px;
+            /* Set width for the progress bar */
+            height: 8px;
+            /* Height of the progress bar */
+            background-color: #ddd;
+            /* Light gray background */
+            border-radius: 4px;
+            /* Rounded corners */
+            overflow: hidden;
+            /* Ensure the fill doesn't overflow */
+            display: inline-block;
+            /* Spacing to the left of the level number */
+            vertical-align: middle;
+            /* Align it with the level text */
+        }
+
+        /* Progress bar fill */
+        .progress-bar {
+            height: 100%;
+            /* Fill the entire height */
+            background-color: #4caf50;
+            /* Green color to represent progress */
+            width: 40%;
+            /* Set the progress statically (40% in this example) */
+            border-radius: 4px 0 0 4px;
+            /* Rounded corners for the left side */
+        }
+
+
+
+/* Base Nav Styles */
+.nav-bar {
+    height: var(--nav-height);
+    background-color: var(--nav-background);
+    padding: 0 16px;
+    border-bottom: 1px solid var(--input-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* User Menu Button */
+.user-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--button-text-color);
+    transition: all 0.2s ease;
+    height: 32px;
+}
+
+.user-menu-button:hover {
+    background-color: rgba(255, 215, 0, 0.2);
+}
+
+.user-menu-button .avatar {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+}
+
+/* Nav Links */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    color: var(--button-text-color);
+    text-decoration: none;
+    border-radius: 6px;
+    position: relative;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--button-color);
+}
+
+.nav-link.active {
+    background-color: var(--button-color);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--tab-active-color);
+    border-radius: 2px;
+}
+
+/* Icons and Text */
+.nav-icon {
+    font-size: 16px;
+}
+
+.nav-username {
+    color: var(--username-color);
+    font-weight: 500;
+}
+
+.dropdown-arrow {
+    font-size: 10px;
+    color: var(--button-text-color);
+}
+
+/* Notification Dots */
+.notification-container {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 2px;
+}
+
+.notification-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.notification-dot.room-notification {
+    background-color: #ef4444;
+}
+
+.notification-dot.dm-notification {
+    background-color: #3b82f6;
+}
+
+/* Gold Balance */
+.nav-link.gold-balance {
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.nav-link.gold-balance:hover {
+    background-color: rgba(255, 215, 0, 0.2);
+}
+
+/* User Dropdown */
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background-color: var(--modal-background);
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    z-index: 1000;
+}
+
+.status-section {
+    padding: 12px;
+}
+
+.status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.status-option {
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--button-text-color);
+}
+
+.status-option:hover {
+    background-color: var(--button-color);
+}
+
+.status-option.active {
+    background-color: var(--button-color);
+}
+
+.mood-section {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.mood-input {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background-color: var(--input-background-color);
+    color: var(--message-text-color);
+}
+
+.mood-update {
+    padding: 6px 12px;
+    background-color: var(--button-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 4px;
+    color: var(--button-text-color);
+    cursor: pointer;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: var(--input-border-color);
+    margin: 8px 0;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: var(--button-text-color);
+    text-decoration: none;
+}
+
+.dropdown-item:hover {
+    background-color: var(--button-color);
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .nav-bar {
+        padding: 0;
+        justify-content: space-around;
+    }
+
+    .nav-left, .nav-right {
+        display: contents;
+    }
+
+    .nav-text, .nav-username {
+        display: none;
+    }
+
+    .nav-icon {
+        font-size: 20px;
+    }
+
+    .nav-link, .user-menu-button {
+        padding: 8px;
+    }
+
+    .user-menu-button {
+        background: none;
+        border: none;
+        height: auto;
+    }
+
+    .nav-link.gold-balance {
+        background: none;
+        border: none;
+    }
+
+    .dropdown-arrow {
+        display: inline;
+        margin-left: 0;
+    }
+
+    
+}
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .left-sidebar,
+        .right-sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--background-color);
+            border-right: 1px solid var(--input-border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .right-sidebar {
+            border-right: none;
+            border-left: 1px solid var(--input-border-color);
+        }
+
+        .sidebar-header {
+            padding: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--input-border-color);
+            color: var(--username-color);
+        }
+
+        .room-list,
+        .user-list {
+            padding: 8px;
+        }
+
+        .room-item,
+        .user-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .room-item:hover,
+        .user-item:hover {
+            background-color: var(--button-color);
+        }
+
+        .room-item.active {
+            background-color: var(--button-color);
+        }
+
+        /* Room Header */
+        .room-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--input-border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--background-color);
+        }
+
+        .room-header h2 {
+            color: var(--username-color);
+            font-size: 18px;
+        }
+
+        .room-header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Pinned Message Bar */
+        .pinned-message-bar {
+            padding: 8px 16px;
+            background-color: var(--button-color);
+            border-bottom: 1px solid var(--input-border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pinned-message-bar:hover {
+            background-color: var(--nav-background);
+        }
+
+        .pin-icon {
+            color: var(--message-text-color);
+        }
+
+        /* Room Item Styles */
+        .room-name {
+            color: var(--username-color);
+            font-weight: bold;
+        }
+
+        .last-message {
+            font-size: 12px;
+            color: var(--message-text-color);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* User Item Styles */
+        .user-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .user-item .avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-mood {
+            font-size: 12px;
+            color: var(--message-text-color);
+            margin-top: 2px;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .message-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background-image: url('https://img.freepik.com/free-vector/abstract-watercolor-background_23-2149038179.jpg?semt=ais_hybrid');
+        }
+        }
+
+        .badge {
+            width: 14px;
+            height: 14px;
+            font-size: 14px;
+            padding: 0;
+            margin: 0;
+            margin-bottom: -2px;
+            margin-left: 4px;
+        }
+
+        .message-container {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10%;
+            margin-right: 8px;
+            display: flex;
+            margin-top: 2px;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            background-color: #1496bb;
+            cursor: pointer;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: bold;
+            display: block;
+            color: var(--username-color);
+        }
+
+        .message-body {
+            margin: 4px 0 0;
+            margin-top: 2px;
+            line-height: 1.1;
+            color: var(--message-text-color);
+        }
+
+        .hover-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+        }
+
+        .message-container:hover .hover-actions {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            background-color: var(--background-color);
+        }
+
+        .reactions {
+            margin-top: 4px;
+            display: flex;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--message-text-color);
+            align-items: center;
+        }
+
+        .chat-controls {
+            padding: 16px;
+            border-top: 1px solid var(--input-border-color);
+            background-color: var(--background-color);
+        }
+
+        .message-input-container {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .button-group button,
+        button,
+        .send-button {
+            padding: 6px 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            background-color: var(--button-color);
+            border: 1px solid var(--button-border-color);
+            color: var(--button-text-color);
+            border-radius: 5px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 7px 8px;
+            box-sizing: border-box;
+            background-color: var(--input-background-color);
+            color: var(--message-text-color);
+            transition: background-color 0.3s, color 0.3s;
+            border: 1px solid var(--input-border-color);
+            border-radius: 5px;
+        }
+
+        .small-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: calc(0px + var(--nav-height));
+            z-index: 9990;
+        }
+
+        .small-modal-content {
+            background: var(--modal-background);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            color: var(--message-text-color);
+        }
+
+        .pinned-messages-modal .modal-content {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .pinned-messages-modal .modal-content {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                border-radius: 0;
+                margin: 0;
+                padding-top: 10vh;
+            }
+        }
+
+        .close-button {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--message-text-color);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 80px;
+            right: 10px;
+            font-size: 14px;
+            z-index: 100;
+            color: var(--message-text-color);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .profile-thumbnail {
+            width: 100px;
+            height: 100px;
+            border-radius: 5%;
+            margin-right: 20px;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .nav-button {
+                display: block;
+            }
+
+            .left-sidebar,
+            .right-sidebar {
+                position: fixed;
+                top: var(--nav-height);
+                height: calc(100vh - var(--nav-height));
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .right-sidebar {
+                right: 0;
+                transform: translateX(100%);
+            }
+
+            .left-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .right-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+        }
+
+
+
+        /* popup message */
+        #popup-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .popup {
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            min-width: 250px;
+            position: relative;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .popup .emoji {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .popup .message {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .popup .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .popup .progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background-color: rgba(0, 0, 0, 0.15);
+            animation: progress 3.5s linear forwards;
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        .popup.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .popup.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .popup.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .popup.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--input-border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: var(--username-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-button {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--message-text-color);
+            border: none;
+            background: none;
+            padding: 5px;
+            padding-top: 0;
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
+
+        .room-info {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: var(--button-color);
+            border-radius: 8px;
+        }
+
+        .room-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--background-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .room-details {
+            flex: 1;
+        }
+
+        .room-name {
+            font-weight: bold;
+            color: var(--username-color);
+            margin-bottom: 4px;
+        }
+
+        .room-meta {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .room-description {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .site-reference {
+            font-size: 12px;
+            color: var(--tab-active-color);
+            margin-bottom: 16px;
+        }
+
+        .url-section {
+            margin-bottom: 20px;
+        }
+
+        .url-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--username-color);
+        }
+
+        .url-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 4px;
+            background: var(--background-color);
+            color: var(--message-text-color);
+            font-size: 14px;
+        }
+
+        .button {
+            padding: 6px 8px;
+            border: 1px solid var(--button-border-color);
+            border-radius: 5px;
+            background: var(--button-color);
+            color: var(--button-text-color);
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .button.primary {
+            background: var(--tab-active-color);
+            color: white;
+            border: none;
+        }
+
+        .share-options {
+            margin-top: 24px;
+        }
+
+        .share-label {
+            margin-bottom: 12px;
+            color: var(--username-color);
+        }
+
+        .share-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .success-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tab-active-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            display: none;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            85% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .share-modal {
+                width: 90%;
+                margin: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .share-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .url-container {
+                flex-direction: column;
+            }
+        }
+
+        /* emoji test */
+
+        .picker-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--input-border-color);
+            background: var(--nav-background);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .picker-tab {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--message-text-color);
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .picker-tab.active {
+            color: var(--tab-active-color);
+        }
+
+        .picker-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--tab-active-color);
+        }
+
+        .picker-tab:hover:not(.active) {
+            background: var(--button-color);
+        }
+
+        .picker-content {
+            display: none;
+            height: calc(100% - 41px);
+            /* Adjust for tab height */
+            overflow: hidden;
+        }
+
+        .picker-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gif-grid,
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 8px;
+            height: calc(100% - 48px);
+            overflow-y: auto;
+        }
+
+        .gif-item,
+        .sticker-item {
+            aspect-ratio: 16/9;
+            background: var(--button-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--message-text-color);
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .sticker-item {
+            aspect-ratio: 1;
+        }
+
+        .gif-item:hover,
+        .sticker-item:hover {
+            background: var(--nav-background);
+        }
+
+        .emoji-picker-modal {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            width: 320px;
+            height: 400px;
+            background: var(--modal-background);
+            border: 1px solid var(--input-border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+
+        .emoji-picker-header {
+            padding: 8px;
+            border-bottom: 1px solid var(--input-border-color);
+        }
+
+        .emoji-search {
+            margin-bottom: 8px;
+        }
+
+        .emoji-search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 4px;
+            background: var(--input-background-color);
+            color: var(--message-text-color);
+        }
+
+        .emoji-categories {
+            display: flex;
+            overflow-x: auto;
+            gap: 4px;
+            padding-bottom: 8px;
+        }
+
+        .emoji-category {
+            padding: 6px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .emoji-category:hover,
+        .emoji-category.active {
+            background: var(--button-color);
+        }
+
+        .emoji-content {
+            height: calc(100% - 100px);
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .emoji-group {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+        }
+
+        .emoji-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            font-size: 1.5em;
+        }
+
+        .emoji-item:hover {
+            background: var(--button-color);
+        }
+
+        .emoji-item[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background: var(--modal-background);
+            border: 1px solid var(--input-border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        /* backgrounds for main chat area controlled in room management modal */
+        .background-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .background-thumbnail {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .background-thumbnail img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .background-thumbnail button {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .background-thumbnail:hover button {
+            opacity: 1;
+        }
+
+        /* Hide default action buttons when in background tab */
+        #background~.action-buttons {
+            display: none;
+        }
+
+        .remove-background-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--button-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .remove-background-section .button {
+            background-color: var(--background-color);
+        }
+
+        .background-divider {
+            height: 1px;
+            background-color: var(--button-border-color);
+            margin: 20px 0;
+        }
+
+
+        /* lwft side bar */
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .left-sidebar-content-container {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .left-sidebar-tabs {
+            border-bottom: 1px solid var(--input-border-color);
+        }
+
+        .left-sidebar-room-header {
+            display: flex;
+            flex-direction: column;
+            /* Stack children vertically */
+        }
+
+        .search-container {
+            /* Optional: Visual separator */
+            margin: 15px;
+            margin-bottom: 10px;
+            /* Add spacing below the search bar */
+        }
+
+        .search-input {
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .left-sidebar-room-header-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+            /* Space buttons evenly */
+        }
+
+
+
+        /* Update the right menu button to only show in room header on mobile */
+.mobile-users-button {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .mobile-users-button {
+        display: block !important;
+    }
+    
+    /* Hide the original right menu button in nav */
+    .nav-right #rightMenuButton {
+        display: none !important;
+    }
+}
+
+/* Ensure room header buttons align properly */
+.room-header-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Style the mobile users button consistently */
+.mobile-users-button {
+    padding: 6px 8px;
+    cursor: pointer;
+    background-color: var(--button-color);
+    border: 1px solid var(--button-border-color);
+    color: var(--button-text-color);
+    border-radius: 5px;
+}
+
+
+/*wall */
+/* Wall Post Container */
+/* Wall Post Container */
+/* Wall Container */
+.wall-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Post Creation Form */
+.wall-post-form {
+    background: var(--background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.wall-post-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background: var(--background-color);
+    color: var(--message-text-color);
+    resize: vertical;
+    margin-bottom: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.wall-post-input:focus {
+    outline: none;
+    border-color: var(--tab-active-color);
+}
+
+.post-form-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-counter {
+    color: var(--message-text-color);
+    font-size: 14px;
+}
+
+.post-wall-button {
+    padding: 8px 16px;
+    background: var(--tab-active-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.post-wall-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Pinned Post */
+.pinned-wall-post {
+    margin-bottom: 24px;
+}
+
+.pin-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--message-text-color);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pinned-wall-post .wall-post {
+    border: 2px solid var(--tab-active-color);
+}
+
+/* Wall Post Layout */
+.wall-post {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 12px;
+    background: var(--background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+}
+
+/* Avatar */
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Post Content */
+.post-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0; /* Prevents flex item from overflowing */
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.username {
+    color: var(--username-color);
+    font-weight: 500;
+}
+
+.post-time {
+    color: var(--message-text-color);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.post-menu {
+    border: none;
+    background: none;
+    color: var(--message-text-color);
+    cursor: pointer;
+    padding: 4px;
+    margin: -4px;
+}
+
+/* Message Text */
+.message-text {
+    color: var(--message-text-color);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Post Actions */
+.post-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.thumbs-up-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--button-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 4px;
+    color: var(--button-text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.thumbs-up-btn:hover {
+    background: var(--hover-color);
+}
+
+.thumbs-up-btn.active {
+    background: var(--tab-active-color);
+    color: white;
+    border-color: var(--tab-active-color);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .wall-post {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .message-text {
+        font-size: 13px;
+    }
+
+    .thumbs-up-btn {
+        padding: 4px 8px;
+        font-size: 13px;
+    }
+
+    .wall-post-form {
+        padding: 12px;
+    }
+
+    .post-form-controls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .post-wall-button {
+        width: 100%;
+    }
+}
+
+    </style>
+</head>
+
+<body>
+<!-- Navigation Bar HTML -->
+<nav class="nav-bar">
+    <div class="nav-left">
+        <!-- Username with dropdown -->
+        <button class="user-menu-button">
+            <div class="avatar">lvl</div>
+            <span class="nav-username">lvl1human</span>
+            <span class="dropdown-arrow">▼</span>
+        </button>
+
+         <!-- Dropdown Menu -->
+         <div class="user-dropdown">
+            <div class="status-section">
+                <div class="status-options">
+                    <button class="status-option active">🟢 Online</button>
+                    <button class="status-option">🟡 Away</button>
+                    <button class="status-option">⚫ Appear Offline</button>
+                </div>
+                <div class="mood-section">
+                    <input type="text" class="mood-input" placeholder="Set your mood...">
+                    <button class="mood-update">Update</button>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item" onclick="openBigProfileModal()">👤 Profile</a>
+            <a href="#" class="dropdown-item">🏆 Highscores</a>
+            <a href="#" class="dropdown-item">🚪 Logout</a>
+        </div>
+    </div>
+
+        <!-- Messages -->
+        <a href="#" class="nav-link" id="leftMenuButton">
+            <span class="nav-icon">📑</span>
+
+            <span class="nav-text">Messages</span>
+            <div class="notification-container">
+                <span class="notification-dot room-notification"></span>
+                <span class="notification-dot dm-notification"></span>
+            </div>
+        </a>
+
+        <!-- Simple horizontal nav links -->
+        <a href="#" class="nav-link active">
+            <span class="nav-icon">🌐</span>
+            <span class="nav-text">Rooms</span>
+        </a>
+        <a href="#" class="nav-link">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">People</span>
+        </a>
+    </div>
+
+    <div class="nav-right">
+        <a href="#" class="nav-link">
+            <span class="nav-icon">🔔</span>
+            <span class="nav-text">Notifications</span>
+            <span class="notification-dot"></span>
+        </a>
+        <a href="#" class="nav-link gold-balance">
+            <span class="nav-icon">💰</span>
+            <span class="nav-text">100 Gold</span>
+        </a>
+    </div>
+</nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+
+
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <!-- Non-scrolling header section -->
+            <div class="left-sidebar-room-header">
+                <!-- Search -->
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search...">
+                </div>
+                <!-- Buttons -->
+                <div class="left-sidebar-room-header-buttons">
+                    <button class="button active">Rooms</button>
+                    <button class="button">People</button>
+                    <button class="button">All</button>
+                </div>
+            </div>
+
+            <!-- Scrollable content -->
+            <div class="sidebar-content-container" style="overflow-y: auto; flex: 1;">
+                <div class="sidebar-header">Subscribed Rooms</div>
+                <div class="room-list">
+                    <div class="room-item active">
+                        <span>General Chat</span>
+                        <div class="last-message">Latest: Here's the last message from general chat...</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Support</span>
+                        <div class="last-message">Latest: Need help with login issues...</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Gaming</span>
+                        <div class="last-message">Latest: Anyone up for some Minecraft?</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Technology</span>
+                        <div class="last-message">Latest: Check out this new AI tool!</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Music</span>
+                        <div class="last-message">Latest: Sharing my new playlist...</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Movies & TV</span>
+                        <div class="last-message">Latest: New episode discussion thread</div>
+                    </div>
+
+                    <div class="sidebar-header">Direct Messages</div>
+                    <div class="room-item">
+                        <span>John Doe 🟢</span>
+                        <div class="last-message">Latest: Hey, how are you?</div>
+                    </div>
+
+                    <div class="room-item">
+                        <span>Jane Smith 🟡</span>
+                        <div class="last-message">Latest: See you tomorrow!</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Mike Johnson 🔴</div>
+                        <div class="last-message">Latest: Thanks for the help!</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Sarah Wilson 🟢</div>
+                        <div class="last-message">Latest: Did you get my email?</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">David Lee 🟡</div>
+                        <div class="last-message">Latest: Working on the project now</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Emma Davis 🟢</div>
+                        <div class="last-message">Latest: Check out this meme 😂</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">James Brown 🔴</div>
+                        <div class="last-message">Latest: Meeting at 3pm?</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Lisa Chen 🟢</div>
+                        <div class="last-message">Latest: Just finished the design</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Tom Anderson 🟡</div>
+                        <div class="last-message">Latest: Let's catch up soon</div>
+                    </div>
+
+                    <div class="room-item">
+                        <div class="room-name">Amy Zhang 🟢</div>
+                        <div class="last-message">Latest: Happy birthday! 🎉</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Room Header -->
+            <div class="room-header">
+                <h2 onclick="openRoomDetailsModal()" style="cursor: pointer;">General Chat</h2>
+                <div class="room-header-buttons">
+                    <button onclick="openInviteModal()">Share Room</button>
+                    <button onclick="openRoomManagementModal()">Room Settings</button>
+                    <button class="nav-button mobile-users-button" id="rightMenuButton">👥</button>
+                </div>
+            </div>
+
+            <!-- Pinned Message Bar -->
+            <div class="pinned-message-bar" onclick="openPinnedMessages()">
+                <span class="pin-icon">📌</span>
+                <span>Latest pinned: Important announcement about the weekend meetup...</span>
+            </div>
+
+            <!-- Message Area -->
+            <div class="message-area">
+                <div class="message-container" data-message-id="12345">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username">
+                            lvl1human
+                            <span class="badge" title="Founder">1️⃣</span>
+                            <span class="badge" title="Global Admin">🌐</span>
+                        </span>
+                        <p class="message-body">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae nemo natus nostrum esse
+                            similique deleniti neque accusamus dolor, vitae inventore.
+                        </p>
+                        <div class="reactions"></div>
+                    </div>
+                    <div class="hover-actions">
+                        <button onclick="likeMessage(this)">👍</button>
+                        <button onclick="notImplemented('warning')">Reply</button>
+                        <button onclick="notImplemented('warning')">Report</button>
+                        <button
+                            onclick="openDetails('lvl1human', '2025-01-01 12:34:56', 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae nemo natus nostrum essesimilique deleniti neque accusamus dolor, vitae inventore.')">Details</button>
+                    </div>
+                </div>
+
+                <div class="message-container" data-message-id="12346">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username" onlclick="openDMModal()">
+                            lvl1human
+                            <span class="badge" title="Founder">1️⃣</span>
+                            <span class="badge" title="Global Admin">🌐</span>
+                        </span>
+                        <p class="message-body">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                        </p>
+                        <div class="reactions"></div>
+                    </div>
+                    <div class="hover-actions">
+                        <button onclick="likeMessage(this)">👍</button>
+                        <button onclick="notImplemented('warning')">Reply</button>
+                        <button onclick="notImplemented('warning')">Report</button>
+                        <button
+                            onclick="openDetails('lvl1human', '2025-01-01 12:34:56', 'Lorem ipsum dolor sit, amet consectetur adipisicing elit.')">Details</button>
+                    </div>
+                </div>
+
+
+                <div class="message-container" data-message-id="12345">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username bg-image-text">
+                            lvl1human
+                        </span>
+                        <span class="badge" title="Founder">1️⃣</span>
+                        <span class="badge" title="Global Admin">🌐</span>
+                        <p class="message-body bg-image-text">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae nemo natus nostrum esse
+                            similique deleniti neque accusamus dolor, vitae inventore.
+                        </p>
+                        <div class="reactions"></div>
+                    </div>
+                    <div class="hover-actions">
+                        <button onclick="likeMessage(this)">👍</button>
+                        <button onclick="notImplemented('warning')">Reply</button>
+                        <button onclick="notImplemented('warning')">Report</button>
+                        <button
+                            onclick="openDetails('lvl1human', '2025-01-01 12:34:56', 'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae nemo natus nostrum essesimilique deleniti neque accusamus dolor, vitae inventore.')">Details</button>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+
+            <!-- Chat Controls -->
+            <div class="chat-controls">
+                <div class="message-input-container">
+                    <div class="button-group">
+                        <button class="pick-emoji-button">😊</button>
+                    </div>
+                    <input type="text" class="message-input" placeholder="Type your message here..." />
+                    <div class="button-group">
+                        <button class="voice-note-button" onclick="notImplemented()">🎤</button>
+                        <button class="send-image-button" onclick="notImplemented()">🖼️</button>
+                        <button class="send-button" onclick="notImplemented()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="sidebar-header">Online Room Members (24)</div>
+            <div class="user-list-container" style="overflow-y: auto; flex: 1;">
+                <div class="user-list">
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(180, 65%, 55%); color: #000000;">AK</div>
+                        <div class="user-info">
+                            <span>🟢 Alice Kim</span>
+                            <div class="user-mood">Coding something awesome!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(220, 60%, 50%); color: #FFFFFF;">BW</div>
+                        <div class="user-info">
+                            <span>🟢 Ben Wilson</span>
+                            <div class="user-mood">Ready to chat and make friends!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(150, 65%, 45%); color: #FFFFFF;">CJ</div>
+                        <div class="user-info">
+                            <span>🟢 Clara Johnson</span>
+                            <div class="user-mood">Just finished a great book!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(320, 70%, 55%); color: #000000;">DM</div>
+                        <div class="user-info">
+                            <span>🟢 David Martinez</span>
+                            <div class="user-mood">Gaming all day!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(280, 60%, 50%); color: #FFFFFF;">EP</div>
+                        <div class="user-info">
+                            <span>🟢 Emma Peterson</span>
+                            <div class="user-mood">Coffee is life ☕</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(200, 65%, 45%); color: #FFFFFF;">FT</div>
+                        <div class="user-info">
+                            <span>🟢 Felix Thompson</span>
+                            <div class="user-mood">Here to help!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(120, 60%, 55%); color: #000000;">GR</div>
+                        <div class="user-info">
+                            <span>🟡 Grace Rodriguez</span>
+                            <div class="user-mood">Taking a short break</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(30, 70%, 50%); color: #FFFFFF;">HP</div>
+                        <div class="user-info">
+                            <span>🟡 Henry Parker</span>
+                            <div class="user-mood">In a meeting</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(340, 65%, 55%); color: #000000;">IC</div>
+                        <div class="user-info">
+                            <span>🟡 Isabella Chen</span>
+                            <div class="user-mood">Be back soon!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(170, 60%, 45%); color: #FFFFFF;">JL</div>
+                        <div class="user-info">
+                            <span>🟡 Jack Lee</span>
+                            <div class="user-mood">Grabbing lunch</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(260, 65%, 50%); color: #FFFFFF;">KH</div>
+                        <div class="user-info">
+                            <span>🟡 Katie Hughes</span>
+                            <div class="user-mood">Studying hard</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(90, 60%, 55%); color: #000000;">LB</div>
+                        <div class="user-info">
+                            <span>🟡 Liam Baker</span>
+                            <div class="user-mood">On the phone</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(210, 70%, 45%); color: #FFFFFF;">MS</div>
+                        <div class="user-info">
+                            <span>🔴 Maria Santos</span>
+                            <div class="user-mood">See you tomorrow!</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(140, 65%, 50%); color: #FFFFFF;">NC</div>
+                        <div class="user-info">
+                            <span>🔴 Noah Clark</span>
+                            <div class="user-mood">Gone fishing</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(300, 60%, 55%); color: #000000;">OW</div>
+                        <div class="user-info">
+                            <span>🔴 Oliver Wright</span>
+                            <div class="user-mood">Back in 2 hours</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(190, 65%, 45%); color: #FFFFFF;">PL</div>
+                        <div class="user-info">
+                            <span>🔴 Penny Liu</span>
+                            <div class="user-mood">Out for a run</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(110, 70%, 50%); color: #FFFFFF;">QA</div>
+                        <div class="user-info">
+                            <span>🔴 Quinn Anderson</span>
+                            <div class="user-mood">Catching some Z's 😴</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(240, 65%, 55%); color: #FFFFFF;">RK</div>
+                        <div class="user-info">
+                            <span>🔴 Ryan Kim</span>
+                            <div class="user-mood">Weekend mode: ON</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(160, 60%, 50%); color: #FFFFFF;">SM</div>
+                        <div class="user-info">
+                            <span>🔴 Sara Miller</span>
+                            <div class="user-mood">Busy with family</div>
+                        </div>
+                    </div>
+
+                    <div class="user-item">
+                        <div class="avatar" style="background-color: hsl(50, 65%, 55%); color: #000000;">TJ</div>
+                        <div class="user-info">
+                            <span>🔴 Tom Jackson</span>
+                            <div class="user-mood">Will be back Monday</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay"></div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <label>
+            <input type="checkbox" id="themeToggle" />
+            Dark Theme
+        </label>
+    </div>
+
+    <!-- Message Details Modal -->
+    <div id="messageDetailsModal" class="small-modal" style="display: none;">
+        <div class="small-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Message Details</h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <p class="room-meta"><strong>Username:</strong> <span id="modal-username"></span></p>
+            <p class="room-meta"><strong>Time Sent:</strong> <span id="modal-time"></span></p>
+            <p class="room-meta"><strong>Message:</strong></p>
+            <p class="room-meta" id="modal-message"></p>
+            <div style="padding-top: 10px">
+                <button onclick="copyMessage()">Copy</button>
+                <button onclick="notImplemented()">Edit</button>
+                <button onclick="notImplemented()">Delete</button>
+                <button onclick="notImplemented()">Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div id="smallProfileModal" class="small-modal" style="display: none;">
+        <div class="small-modal-content">
+            <span class="close-button">&times;</span>
+            <div class="profile-header">
+                <img id="profile-thumbnail" class="profile-thumbnail" src="profile.jpg" alt="User Thumbnail" />
+                <div>
+                    <h2 id="modal-title" style="margin-bottom: 5px">Lvl1human</h2>
+                    <p class="room-meta">
+                        <strong>Status:</strong> <span id="profile-status">🟢 Online</span>
+                    </p>
+                    <p class="room-meta">
+                        <strong>Level:</strong>
+                        <span id="profile-level">10</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 40%;"></div>
+                    </div>
+                    </p>
+                </div>
+            </div>
+            <p class="room-meta"><span id="profile-details">I'm a 100 year old male from New Zealand</span></p>
+            <p class="room-meta"><strong>Mood:</strong> <span id="profile-bio">Gaming it out.</span></p>
+            <p class="room-meta"><strong>Joined:</strong> <span id="profile-joined">2025-01-01</span></p>
+            <p class="room-meta"><strong>Badges:</strong>
+                <span title="Account Registered" aria-label="Account Registered" role="img">✅</span>
+                <span title="Founder" aria-label="Founder" role="img">1️⃣</span>
+                <span title="Global Admin" aria-label="Global Admin" role="img">🌐</span>
+            </p>
+            <p class="site-reference">Divorced • Looking for friends • PG chat only</p>
+            <div>
+                <button>Message</button>
+                <button>Add</button>
+                <button>Block</button>
+                <button onclick="openBigProfileModal()">Full Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pinned Messages Modal -->
+    <div id="pinnedMessagesModal" class="small-modal pinned-messages-modal" style="display: none;">
+        <div class="small-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <span class="pin-icon">📌</span>
+                    Pinned Messages
+                </h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="pinned-messages-list">
+                <div class="message-container">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username">lvl1human</span>
+                        <p class="message-body">Important announcement about the weekend meetup.</p>
+                        <small class="site-reference">Pinned by lvl1human on Jan 14, 2025</small>
+                    </div>
+                </div>
+                <div class="message-container">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username">lvl1human</span>
+                        <p class="message-body">Important announcement about the weekend meetup. Important
+                            announcement
+                            about the weekend meetup.</p>
+                        <small class="site-reference">Pinned by lvl1human on Jan 14, 2025</small>
+                    </div>
+                </div>
+                <div class="message-container">
+                    <div class="avatar">lvl</div>
+                    <div class="content">
+                        <span class="username">lvl1human</span>
+                        <p class="message-body">Important announcement about the weekend meetup.</p>
+                        <small class="site-reference">Pinned by lvl1human on Jan 14, 2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Room invite modal-->
+    <div class="small-modal" id="inviteModal" style="display: none">
+        <div class="small-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <span>📢</span>
+                    <span>Share Room</span>
+                </h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="room-info">
+                <div class="room-icon">💬</div>
+                <div class="room-details">
+                    <div class="room-name">General Chat</div>
+                    <div class="room-meta">458 members • Created by System</div>
+                    <div class="room-description">
+                        The main chat room for general discussions and community interaction. Feel free to discuss
+                        any
+                        topic, share your thoughts, and meet new friends!
+                    </div>
+                    <div class="site-reference">www.x99.com</div>
+                </div>
+            </div>
+
+            <div class="url-section">
+                <label class="url-label">Room Link</label>
+                <div class="url-container">
+                    <input type="text" id="invite-url" class="url-input" value="https://x99.com/invite/general-chat"
+                        readonly>
+                    <button class="button primary" id="copyButton" onclick="copyInvite()">
+                        <span>📋</span>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="share-options">
+                <div class="share-label">Share via</div>
+                <div class="share-buttons">
+                    <!--facebook-->
+                    <button class="button" onclick="notImplemented()">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-facebook" viewBox="0 0 16 16">
+                                <path
+                                    d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
+                            </svg>
+                            Facebook
+                        </span>
+                    </button>
+                    <!--X ( twitter )-->
+                    <button class="button" onclick="notImplemented()">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-twitter-x" viewBox="0 0 16 16">
+                                <path
+                                    d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
+                            </svg>
+                            X (twitter)
+                        </span>
+                    </button>
+                    <!--whatsapp-->
+                    <button class="button" onclick="notImplemented()">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-whatsapp" viewBox="0 0 16 16">
+                                <path
+                                    d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
+                            </svg>
+                            WhatsApp
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--popup message container-->
+    <div id="popup-container"></div>
+
+
+    <!-- Emoji Picker Modal -->
+    <!-- Emoji Picker Modal -->
+    <div class="emoji-picker-modal" style="display: none;">
+        <!-- Tab Navigation -->
+        <div class="picker-tabs">
+            <button class="picker-tab active" data-tab="emojis">Emoji</button>
+            <button class="picker-tab" data-tab="gifs">GIFs</button>
+            <button class="picker-tab" data-tab="stickers">Stickers</button>
+        </div>
+        <div class="emoji-picker-header">
+            <div class="emoji-search">
+                <input type="text" placeholder="Search emojis..." class="emoji-search-input">
+            </div>
+            <div class="emoji-categories">
+                <button class="emoji-category active" title="Recently Used">🕒</button>
+                <button class="emoji-category" title="Smileys & People">😀</button>
+                <button class="emoji-category" title="Animals & Nature">🐶</button>
+                <button class="emoji-category" title="Food & Drink">🍔</button>
+                <button class="emoji-category" title="Activities">⚽</button>
+                <button class="emoji-category" title="Travel & Places">✈️</button>
+                <button class="emoji-category" title="Objects">💡</button>
+                <button class="emoji-category" title="Symbols">❤️</button>
+                <button class="emoji-category" title="Flags">🏁</button>
+            </div>
+        </div>
+        <div class="emoji-content">
+            <div class="emoji-group">
+                <div class="emoji-item" title="Grinning Face">😀</div>
+                <div class="emoji-item" title="Beaming Face">😁</div>
+                <div class="emoji-item" title="Face with Tears of Joy">😂</div>
+                <div class="emoji-item" title="Rolling on the Floor Laughing">🤣</div>
+                <div class="emoji-item" title="Grinning Face with Big Eyes">😃</div>
+                <div class="emoji-item" title="Grinning Face with Smiling Eyes">😄</div>
+                <div class="emoji-item" title="Grinning Face with Sweat">😅</div>
+                <div class="emoji-item" title="Grinning Squinting Face">😆</div>
+                <div class="emoji-item" title="Winking Face">😉</div>
+                <div class="emoji-item" title="Smiling Face with Smiling Eyes">😊</div>
+                <div class="emoji-item" title="Face Savoring Food">😋</div>
+                <div class="emoji-item" title="Smiling Face with Sunglasses">😎</div>
+                <div class="emoji-item" title="Smiling Face with Heart-Eyes">😍</div>
+                <div class="emoji-item" title="Face Blowing a Kiss">😘</div>
+                <div class="emoji-item" title="Kissing Face">😗</div>
+                <div class="emoji-item" title="Smiling Face">☺️</div>
+                <div class="emoji-item" title="Kissing Face with Closed Eyes">😚</div>
+                <div class="emoji-item" title="Kissing Face with Smiling Eyes">😙</div>
+                <div class="emoji-item" title="Smiling Face with Tear">🥲</div>
+                <div class="emoji-item" title="Face with Tongue">😛</div>
+                <!-- Add more emoji items as needed -->
+            </div>
+        </div>
+
+        <!-- Emoji Content -->
+        <!-- Emoji Picker Modal -->
+        <div class="emoji-picker-modal" style="display: none;">
+            <!-- Tab Navigation -->
+            <div class="picker-tabs">
+                <button class="picker-tab active" data-tab="emojis">Emoji</button>
+                <button class="picker-tab" data-tab="gifs">GIFs</button>
+                <button class="picker-tab" data-tab="stickers">Stickers</button>
+            </div>
+            <div class="emoji-picker-header">
+                <div class="emoji-search">
+                    <input type="text" placeholder="Search emojis..." class="emoji-search-input">
+                </div>
+                <div class="emoji-categories">
+                    <button class="emoji-category active" title="Recently Used">🕒</button>
+                    <button class="emoji-category" title="Smileys & People">😀</button>
+                    <button class="emoji-category" title="Animals & Nature">🐶</button>
+                    <button class="emoji-category" title="Food & Drink">🍔</button>
+                    <button class="emoji-category" title="Activities">⚽</button>
+                    <button class="emoji-category" title="Travel & Places">✈️</button>
+                    <button class="emoji-category" title="Objects">💡</button>
+                    <button class="emoji-category" title="Symbols">❤️</button>
+                    <button class="emoji-category" title="Flags">🏁</button>
+                </div>
+            </div>
+            <div class="emoji-content">
+                <div class="emoji-group">
+                    <div class="emoji-item" title="Grinning Face">😀</div>
+                    <div class="emoji-item" title="Beaming Face">😁</div>
+                    <div class="emoji-item" title="Face with Tears of Joy">😂</div>
+                    <div class="emoji-item" title="Rolling on the Floor Laughing">🤣</div>
+                    <div class="emoji-item" title="Grinning Face with Big Eyes">😃</div>
+                    <div class="emoji-item" title="Grinning Face with Smiling Eyes">😄</div>
+                    <div class="emoji-item" title="Grinning Face with Sweat">😅</div>
+                    <div class="emoji-item" title="Grinning Squinting Face">😆</div>
+                    <div class="emoji-item" title="Winking Face">😉</div>
+                    <div class="emoji-item" title="Smiling Face with Smiling Eyes">😊</div>
+                    <div class="emoji-item" title="Face Savoring Food">😋</div>
+                    <div class="emoji-item" title="Smiling Face with Sunglasses">😎</div>
+                    <div class="emoji-item" title="Smiling Face with Heart-Eyes">😍</div>
+                    <div class="emoji-item" title="Face Blowing a Kiss">😘</div>
+                    <div class="emoji-item" title="Kissing Face">😗</div>
+                    <div class="emoji-item" title="Smiling Face">☺️</div>
+                    <div class="emoji-item" title="Kissing Face with Closed Eyes">😚</div>
+                    <div class="emoji-item" title="Kissing Face with Smiling Eyes">😙</div>
+                    <div class="emoji-item" title="Smiling Face with Tear">🥲</div>
+                    <div class="emoji-item" title="Face with Tongue">😛</div>
+                    <!-- Add more emoji items as needed -->
+                </div>
+            </div>
+
+            <!-- Emoji Content -->
+            <div class="picker-content active" id="emojis-content">
+                <div class="emoji-picker-header">
+                    <div class="emoji-search">
+                        <input type="text" placeholder="Search emojis..." class="emoji-search-input">
+                    </div>
+                    <div class="emoji-categories">
+                        <button class="emoji-category active" title="Recently Used">🕒</button>
+                        <button class="emoji-category" title="Smileys & People">😀</button>
+                        <button class="emoji-category" title="Animals & Nature">🐶</button>
+                        <button class="emoji-category" title="Food & Drink">🍔</button>
+                        <button class="emoji-category" title="Activities">⚽</button>
+                        <button class="emoji-category" title="Travel & Places">✈️</button>
+                        <button class="emoji-category" title="Objects">💡</button>
+                        <button class="emoji-category" title="Symbols">❤️</button>
+                        <button class="emoji-category" title="Flags">🏁</button>
+                    </div>
+                </div>
+                <div class="emoji-content">
+                    <div class="emoji-group">
+                        <div class="emoji-item" title="Grinning Face">😀</div>
+                        <!-- ... other emoji items ... -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- GIFs Content -->
+            <div class="picker-content" id="gifs-content">
+                <div class="emoji-picker-header">
+                    <div class="emoji-search">
+                        <input type="text" placeholder="Search GIFs..." class="emoji-search-input">
+                    </div>
+                </div>
+                <div class="gif-grid">
+                    <div class="gif-item">Trending GIF 1</div>
+                    <div class="gif-item">Reactions</div>
+                    <div class="gif-item">Memes</div>
+                    <div class="gif-item">Happy</div>
+                    <div class="gif-item">Sad</div>
+                    <div class="gif-item">Love</div>
+                    <div class="gif-item">Animals</div>
+                    <div class="gif-item">Sports</div>
+                    <div class="gif-item">TV Shows</div>
+                </div>
+            </div>
+
+            <!-- Stickers Content -->
+            <div class="picker-content" id="stickers-content">
+                <div class="emoji-picker-header">
+                    <div class="emoji-search">
+                        <input type="text" placeholder="Search stickers..." class="emoji-search-input">
+                    </div>
+                </div>
+                <div class="sticker-grid">
+                    <div class="sticker-item">🎭</div>
+                    <div class="sticker-item">🎨</div>
+                    <div class="sticker-item">🎪</div>
+                    <div class="sticker-item">🎠</div>
+                    <div class="sticker-item">🎡</div>
+                    <div class="sticker-item">🎢</div>
+                    <div class="sticker-item">🎪</div>
+                    <div class="sticker-item">🎨</div>
+                    <div class="sticker-item">🎭</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--ROOM MANAGEMENT -->
+    <div class="room-management-modal" id="room-management-modal" style="display: none">
+        <div class="room-management-content">
+            <div class="modal-header">
+                <h1 class="modal-title">⚙️ Room Management - General Chat</h1>
+                <button class="close-button">&times;</button>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="room-info">Room Info</div>
+                <div class="tab" data-tab="settings">Settings</div>
+                <div class="tab" data-tab="security">Security</div>
+                <div class="tab" data-tab="logs">Logs</div>
+                <div class="tab" data-tab="staff">Staff</div>
+                <div class="tab" data-tab="background">Background</div>
+            </div>
+
+            <div class="tab-content">
+                <!-- Room Info Tab -->
+                <div class="content-section active" id="room-info">
+                    <form id="room-info-form">
+                        <div class="form-group">
+                            <label>Room Name</label>
+                            <input type="text" value="General Chat" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea
+                                placeholder="Describe your room...">The main chat room for general discussions and community interaction. Feel free to discuss any topic, share your thoughts, and meet new friends!</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Room Rules</label>
+                            <textarea placeholder="List your room rules...">1. Be respectful to all members
+    2. No spam or self-promotion without permission
+    3. Keep discussions family-friendly
+    4. No hate speech or harassment
+    5. Follow the community guidelines
+    6. Listen to moderators and staff</textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="content-section" id="settings">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Featured Room</h3>
+                            <p class="setting-description">Allow this room to be featured on the rooms list</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="checkbox" id="featured-room">
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Staff list</h3>
+                            <p class="setting-description">Show staff list in room description</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="checkbox" id="featured-room">
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Password Protection</h3>
+                            <p class="setting-description">Require a password to join this room</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="checkbox" id="password-protection">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="password-form" style="display: none;">
+                        <label>Room Password</label>
+                        <input type="password" placeholder="Enter room password">
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Who Can Join</h3>
+                            <p class="setting-description">Control who can join this room</p>
+                        </div>
+                        <div class="setting-control">
+                            <select>
+                                <option value="anyone">Anyone</option>
+                                <option value="registered">Registered Users Only</option>
+                                <option value="friends">Friends Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Account Age Requirement</h3>
+                            <p class="setting-description">Minimum account age to join (in days)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" min="0" value="1" style="width: 100px;">
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Age Restrictions</h3>
+                            <p class="setting-description">Set minimum and maximum age limits</p>
+                        </div>
+                        <div class="setting-control" style="display: flex; gap: 10px;">
+                            <input type="number" min="13" max="100" placeholder="Min" style="width: 80px;">
+                            <span>-</span>
+                            <input type="number" min="13" max="100" placeholder="Max" style="width: 80px;">
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title">Room Status</h3>
+                            <p class="setting-description">Temporarily disable this room</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="button warning" id="disable-room">Disable Room</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h3 class="setting-title danger">Delete Room</h3>
+                            <p class="setting-description">Permanently delete this room and all its content</p>
+                        </div>
+                        <div class="setting-control">
+                            <button class="button danger" id="delete-room">Delete Room</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="content-section" id="security">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search banned users...">
+                        <button class="button">Search</button>
+                    </div>
+
+                    <div class="banned-users-list">
+                        <div class="banned-user">
+                            <div class="avatar">JD</div>
+                            <div class="ban-info">
+                                <div class="username">
+                                    JohnDoe
+                                </div>
+                                <div class="ban-reason">
+                                    Spamming advertisements in chat
+                                </div>
+                                <div class="ban-meta site-reference">
+                                    Banned by: lvl1human (Admin) • Duration: 7 days • Expires: Jan 21, 2025
+                                </div>
+                            </div>
+                            <div class="ban-actions">
+                                <button class="button">View Messages</button>
+                                <button class="button">Unban</button>
+                            </div>
+                        </div>
+
+                        <div class="banned-user">
+                            <div class="avatar">TS</div>
+                            <div class="ban-info">
+                                <div class="username">
+                                    TrollSmith
+                                </div>
+                                <div class="ban-reason">
+                                    Harassment of multiple users
+                                </div>
+                                <div class="ban-meta site-reference">
+                                    Banned by: BobJohnson (Mod) • Duration: Permanent • Expires: Never
+                                </div>
+                            </div>
+                            <div class="ban-actions">
+                                <button class="button">View Messages</button>
+                                <button class="button">Unban</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div class="content-section" id="logs">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search logs...">
+                        <select style="width: 200px;">
+                            <option value="all">All Events</option>
+                            <option value="bans">Bans</option>
+                            <option value="pins">Pins</option>
+                            <option value="settings">Setting Changes</option>
+                            <option value="staff">Staff Changes</option>
+                        </select>
+                        <button class="button">Search</button>
+                    </div>
+
+                    <div class="logs-list">
+                        <div class="log-entry">
+                            <div class="log-icon">📌</div>
+                            <div class="log-content">
+                                <div><strong>lvl1human</strong> pinned a message: "Important announcement about the
+                                    weekend meetup..."</div>
+                                <div class="log-timestamp site-reference">January 14, 2025 12:34 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-icon">🔨</div>
+                            <div class="log-content">
+                                <div><strong>BobJohnson</strong> banned user <strong>TrollSmith</strong> permanently
+                                </div>
+                                <div>Reason: Harassment of multiple users</div>
+                                <div class="log-timestamp site-reference">January 13, 2025 3:45 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-icon">⚡</div>
+                            <div class="log-content">
+                                <div><strong>lvl1human</strong> promoted <strong>JaneSmith</strong> to Administrator
+                                </div>
+                                <div class="log-timestamp site-reference">January 12, 2025 2:15 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-icon">⚙️</div>
+                            <div class="log-content">
+                                <div><strong>JohnDoe</strong> updated room settings</div>
+                                <div>Changes: Enabled password protection</div>
+                                <div class="log-timestamp site-reference">January 11, 2025 11:20 AM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Tab -->
+                <div class="content-section" id="staff">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search users to add as staff...">
+                        <button class="button primary">Add Staff</button>
+                    </div>
+
+                    <div class="staff-section">
+                        <h3>Owner</h3>
+                        <div class="staff-list">
+                            <div class="staff-member">
+                                <div class="avatar">lvl</div>
+                                <div class="staff-info">
+                                    <div class="username">
+                                        lvl1human
+                                        <span class="badge" title="Owner">👑</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>Administrators</h3>
+                        <div class="staff-list">
+                            <div class="staff-member">
+                                <div class="avatar">JD</div>
+                                <div class="staff-info">
+                                    <div class="username">
+                                        JohnDoe
+                                        <span class="badge" title="Admin">⚡</span>
+                                    </div>
+                                    <div class="staff-actions">
+                                        <button class="button">Demote</button>
+                                        <button class="button danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="staff-member">
+                                <div class="avatar">JS</div>
+                                <div class="staff-info">
+                                    <div class="username">
+                                        JaneSmith
+                                        <span class="badge" title="Admin">⚡</span>
+                                    </div>
+                                    <div class="staff-actions">
+                                        <button class="button">Demote</button>
+                                        <button class="button danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>Moderators</h3>
+                        <div class="staff-list">
+                            <div class="staff-member">
+                                <div class="avatar">BJ</div>
+                                <div class="staff-info">
+                                    <div class="username">
+                                        BobJohnson
+                                        <span class="badge" title="Moderator">🛡️</span>
+                                    </div>
+                                    <div class="staff-actions">
+                                        <button class="button">Promote</button>
+                                        <button class="button danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="staff-member">
+                                <div class="avatar">AS</div>
+                                <div class="staff-info">
+                                    <div class="username">
+                                        AliceSmith
+                                        <span class="badge" title="Moderator">🛡️</span>
+                                    </div>
+                                    <div class="staff-actions">
+                                        <button class="button">Promote</button>
+                                        <button class="button danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Background Tab -->
+                <div class="content-section" id="background">
+
+                    <!-- Remove Background Option -->
+                    <div class="remove-background-section">
+                        <button class="button remove-background">Remove Background</button>
+                        <p>Remove the current background image and return to default</p>
+                    </div>
+
+                    <div class="background-divider"></div>
+                    <!-- Digital Matrix -->
+                    <h3>Digital Matrix</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/digitalmatrix/1.jpg" alt="Digital Matrix 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/digitalmatrix/1.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/digitalmatrix/2.jpg" alt="Digital Matrix 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/digitalmatrix/2.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/digitalmatrix/3.jpg" alt="Digital Matrix 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/digitalmatrix/3.jpg">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Dreamscape -->
+                    <h3>Dreamscape</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/dreamscape/1.gif" alt="Dreamscape 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/dreamscape/1.gif">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/dreamscape/2.jpg" alt="Dreamscape 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/dreamscape/2.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/dreamscape/3.jpg" alt="Dreamscape 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/dreamscape/3.jpg">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Nature's Mystique -->
+                    <h3>Nature's Mystique</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/natures-mystique/1.webp" alt="Nature's Mystique 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/natures-mystique/1.webp">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/natures-mystique/2.webp" alt="Nature's Mystique 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/natures-mystique/2.webp">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/natures-mystique/3.webp" alt="Nature's Mystique 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/natures-mystique/3.webp">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Ocean Serenity -->
+                    <h3>Ocean Serenity</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/ocean-serenity/1.jpg" alt="Ocean Serenity 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/ocean-serenity/1.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/ocean-serenity/2.webp" alt="Ocean Serenity 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/ocean-serenity/2.webp">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/ocean-serenity/3.jpg" alt="Ocean Serenity 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/ocean-serenity/3.jpg">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Retro Arcade -->
+                    <h3>Retro Arcade</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/retroarcade/1.png" alt="Retro Arcade 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/retroarcade/1.png">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/retroarcade/2.jpg" alt="Retro Arcade 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/retroarcade/2.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/retroarcade/3.jpg" alt="Retro Arcade 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/retroarcade/3.jpg">Select</button>
+                        </div>
+                    </div>
+
+                    <!-- Wanderer's Map -->
+                    <h3>Wanderer's Map</h3>
+                    <div class="background-grid">
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/wanderersmap/1.jpg" alt="Wanderer's Map 1">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/wanderersmap/1.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/wanderersmap/2.jpg" alt="Wanderer's Map 2">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/wanderersmap/2.jpg">Select</button>
+                        </div>
+                        <div class="background-thumbnail">
+                            <img src="images/backgrounds/wanderersmap/3.jpg" alt="Wanderer's Map 3">
+                            <button class="button select-background"
+                                data-bg="images/backgrounds/wanderersmap/3.jpg">Select</button>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+            </div>
+
+            <div class="action-buttons">
+                <button class="button" id="cancel-button">Cancel</button>
+                <button class="button primary" id="save-button">
+                    Save Changes
+                    <div class="loading-spinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!--DM MODAL-->
+
+    <div class="dm-window" id="dmWindow" style="">
+        <div class="dm-header" id="dmHeader">
+            <div class="dm-title">
+                <div class="dm-avatar">JD</div>
+                <div class="dm-user-info">
+                    <span class="dm-username">JohnDoe</span>
+                    <span class="dm-user-status">🟢 Online</span>
+                </div>
+            </div>
+            <div class="dm-header-actions">
+                <button class="dm-action-button" title="More options">⋮</button>
+                <button class="dm-close-button">&times;</button>
+            </div>
+        </div>
+
+        <div class="dm-message-area">
+            <div class="dm-message-container">
+                <div class="dm-avatar">JD</div>
+                <div class="dm-message-content">
+                    <div class="dm-message-header">
+                        <span class="dm-username">JohnDoe</span>
+                        <span class="dm-message-time">12:34 PM</span>
+                    </div>
+                    <p class="dm-message-body">Hey there! How are you doing today?</p>
+                </div>
+                <div class="dm-message-actions">
+                    <button class="dm-action-button">👍</button>
+                    <button class="dm-action-button">↩️</button>
+                    <button class="dm-action-button">⋮</button>
+                </div>
+            </div>
+
+            <div class="dm-message-container">
+                <div class="dm-avatar">ME</div>
+                <div class="dm-message-content">
+                    <div class="message-header">
+                        <span class="dm-username">Me</span>
+                        <span class="dm-message-time">12:35 PM</span>
+                    </div>
+                    <p class="dm-message-body">Hi! I'm doing great, thanks for asking! How about you?</p>
+                </div>
+                <div class="dm-message-actions">
+                    <button class="dm-action-button">👍</button>
+                    <button class="dm-action-button">↩️</button>
+                    <button class="dm-action-button">⋮</button>
+                </div>
+            </div>
+
+            <div class="dm-message-container">
+                <div class="dm-avatar">JD</div>
+                <div class="dm-message-content">
+                    <div class="dm-message-header">
+                        <span class="dm-username">JohnDoe</span>
+                        <span class="dm-message-time">12:36 PM</span>
+                    </div>
+                    <p class="dm-message-body">I'm good too! Just working on some new projects. Would love to hear
+                        your
+                        thoughts on them sometime!</p>
+                </div>
+                <div class="dm-message-actions">
+                    <button class="dm-action-button">👍</button>
+                    <button class="dm-action-button">↩️</button>
+                    <button class="dm-action-button">⋮</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dm-chat-controls">
+            <div class="dm-message-input-container">
+                <button class="dm-action-button">😊</button>
+                <input type="text" class="dm-message-input" placeholder="Type your message...">
+                <div class="dm-input-buttons">
+                    <button class="dm-action-button">🎤</button>
+                    <button class="dm-action-button">🖼️</button>
+                    <button class="dm-action-button">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dm-context-menu" id="userContextMenu">
+        <div class="dm-context-menu-item">
+            <span>👤</span> View Profile
+        </div>
+        <div class="dm-action-button">
+            <span>🤝</span> Add Friend
+        </div>
+        <div class="dm-context-menu-item">
+            <span>🎁</span> Send Gift
+        </div>
+        <div class="dm-context-menu-item">
+            <span>🔇</span> Block User
+        </div>
+        <div class="dm-context-menu-item">
+            <span>⚠️</span> Report User
+        </div>
+        <div class="dm-context-menu-item">
+            <span>🗑️</span> Clear Chat
+        </div>
+    </div>
+
+
+
+
+    <!--Big Profile Modal-->
+
+    <div class="big-profile-modal" id="big-profile-modal" style="display: none">
+        <div class="big-profile-content">
+            <div class="modal-header">
+                <div class="profile-header">
+                    <img width="150px" height="150px" src="profile.jpg" alt="Profile Photo" class="profile-photo">
+                    <div class="profile-info">
+                        <h1 class="profile-name">lvl1human</h1>
+                        <div class="profile-meta">
+                            <div class="level-info">
+                                <span>Level 10</span>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 40%;"></div>
+                                </div>
+                            </div>
+                            <span>New Zealand</span>
+                            <button class="like-button">
+                                <span>👍</span>
+                                <span>123 Likes</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="close-button">&times;</button>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="profile">Profile</div>
+                <div class="tab" data-tab="feed">Feed</div>
+                <div class="tab" data-tab="pictures">Pictures</div>
+                <div class="tab" data-tab="friends">Friends</div>
+                <div class="tab" data-tab="gifts">Gifts</div>
+                <div class="tab" data-tab="wall">Wall</div>
+                <div class="tab" data-tab="blog">Blog</div>
+                <div class="tab" data-tab="achievements">Achievements</div>
+            </div>
+
+            <div class="tab-content">
+                <!-- Profile Tab -->
+                <div class="content-section active" id="profile">
+                    <div class="bio">
+                        <h3>About Me</h3>
+                        <p>Hey there! I'm a passionate gamer and developer from New Zealand.
+                            Love creating new things and meeting awesome people. Always up for
+                            a good chat about tech, games, or life in general!</p>
+                    </div>
+                    <h3>Badges</h3>
+                    <div class="profile-badges">
+
+                        <div class="profile-badge" title="Founder">1️⃣</div>
+                        <div class="profile-badge" title="Global Admin">🌐</div>
+                        <div class="profile-badge" title="Super Contributor">⭐</div>
+                        <div class="profile-badge" title="Premium Member">💎</div>
+
+                    </div>
+                </div>
+
+                <!-- Feed Tab -->
+                <div class="content-section" id="feed">
+                    <div class="feed-item">
+                        <div class="feed-icon">📸</div>
+                        <div class="feed-content">
+                            <p>Updated their profile picture</p>
+                            <img src="profile.jpg" width="100px" height="100px" alt="New profile picture"
+                                class="feed-thumbnail">
+                            <br />
+                            <small class="site-reference">2 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="feed-item">
+                        <div class="feed-icon">🏆</div>
+                        <div class="feed-content">
+                            <p>Achieved Level 10!</p>
+                            <small class="site-reference">1 day ago</small>
+                        </div>
+                    </div>
+                    <div class="feed-item">
+                        <div class="feed-icon">📝</div>
+                        <div class="feed-content">
+                            <p>Posted a new blog: "A Quick Note from lvl1human"</p>
+                            <small class="site-reference">2 days ago</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pictures Tab -->
+                <div class="content-section" id="pictures">
+                    <div class="pictures-section">
+                        <div class="pictures-header">
+                            <h3>Profile Photos</h3>
+                        </div>
+                        <div class="thumbnail-container">
+                            <img src="https://via.placeholder.com/200" alt="Latest profile photo">
+                            <div class="photo-count">12 photos</div>
+                        </div>
+                    </div>
+                    <div class="pictures-section">
+                        <div class="pictures-header">
+                            <h3>Uploaded Photos</h3>
+                        </div>
+                        <div class="thumbnail-container">
+                            <img src="https://via.placeholder.com/200" alt="Latest uploaded photo">
+                            <div class="photo-count">45 photos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Friends Tab -->
+                <div class="content-section" id="friends">
+                    <h3>Friends feature coming soon!</h3>
+                </div>
+
+                <!-- Gifts Tab -->
+                <div class="content-section" id="gifts">
+                    <div class="gifts-grid">
+                        <div class="gift-item">
+                            <div class="gift-icon">🍦</div>
+                            <div class="gift-count">15 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">💋</div>
+                            <div class="gift-count">23 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">❤️</div>
+                            <div class="gift-count">42 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">🌹</div>
+                            <div class="gift-count">7 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">🍩</div>
+                            <div class="gift-count">9 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">☕</div>
+                            <div class="gift-count">100 received</div>
+                        </div>
+                        <div class="gift-item">
+                            <div class="gift-icon">💎</div>
+                            <div class="gift-count">6 received</div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Wall Tab Content -->
+<!-- Wall Section HTML -->
+<!-- Full Wall Section -->
+<div class="content-section" id="wall">
+    <!-- Post Creation Form -->
+    <div class="wall-post-form">
+        <textarea 
+            placeholder="Write something on lvl1human's wall..." 
+            maxlength="500" 
+            class="wall-post-input"
+        ></textarea>
+        <div class="post-form-controls">
+            <span class="char-counter">0/500</span>
+            <button class="post-wall-button" disabled>Post on Wall</button>
+        </div>
+    </div>
+
+    <!-- Pinned Post -->
+    <div class="pinned-wall-post">
+        <div class="pin-indicator">
+            <span class="pin-icon">📌</span>
+            Pinned Post
+        </div>
+        <div class="wall-post">
+            <div class="avatar" style="background-color: #1496bb;">lvl</div>
+            <div class="post-content-wrapper">
+                <div class="post-header">
+                    <span class="username">lvl1human</span>
+                    <span class="badge" title="Founder">1️⃣</span>
+                    <span class="badge" title="Global Admin">🌐</span>
+                    <span class="post-time">Pinned on Jan 15, 2025</span>
+                    <button class="post-menu">⋮</button>
+                </div>
+                <div class="message-text">
+                    Welcome to my wall! Feel free to leave messages, but please keep things friendly and respectful. I'll try to respond when I can! 😊
+                    
+                    Check out my blog for more updates about my projects and adventures!
+                </div>
+                <div class="post-actions">
+                    <button class="thumbs-up-btn" onclick="thumbsUpWallPost(this)">
+                        👍 <span class="thumbs-count">24</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regular Posts -->
+    <div class="wall-posts">
+        <!-- Post 1 -->
+        <div class="wall-post">
+            <div class="avatar" style="background-color: #e91e63;">JS</div>
+            <div class="post-content-wrapper">
+                <div class="post-header">
+                    <span class="username">JaneSmith</span>
+                    <span class="badge" title="Moderator">🛡️</span>
+                    <span class="post-time">2 hours ago</span>
+                    <button class="post-menu">⋮</button>
+                </div>
+                <div class="message-text">
+                    Thanks for helping me with the coding problem yesterday! You're always so helpful! This is a longer message that will wrap to multiple lines and should align properly with the rest of the text. Adding even more text to show how the alignment works with very long messages that span multiple lines.
+                </div>
+                <div class="post-actions">
+                    <button class="thumbs-up-btn" onclick="thumbsUpWallPost(this)">
+                        👍 <span class="thumbs-count">3</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="wall-post">
+            <div class="avatar" style="background-color: #9c27b0;">BJ</div>
+            <div class="post-content-wrapper">
+                <div class="post-header">
+                    <span class="username">BobJohnson</span>
+                    <span class="badge" title="Premium">💎</span>
+                    <span class="post-time">1 day ago</span>
+                    <button class="post-menu">⋮</button>
+                </div>
+                <div class="message-text">
+                    Great gaming session last night! We should do it again soon. 🎮
+                </div>
+                <div class="post-actions">
+                    <button class="thumbs-up-btn" onclick="thumbsUpWallPost(this)">
+                        👍 <span class="thumbs-count">5</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post 3 -->
+        <div class="wall-post">
+            <div class="avatar" style="background-color: #673ab7;">AS</div>
+            <div class="post-content-wrapper">
+                <div class="post-header">
+                    <span class="username">AliceSmith</span>
+                    <span class="badge" title="Verified">✓</span>
+                    <span class="post-time">3 days ago</span>
+                    <button class="post-menu">⋮</button>
+                </div>
+                <div class="message-text">
+                    Happy Birthday! 🎂 Hope you have an amazing day filled with joy and laughter! 🎉
+                    Looking forward to the party this weekend! 🥳
+                </div>
+                <div class="post-actions">
+                    <button class="thumbs-up-btn" onclick="thumbsUpWallPost(this)">
+                        👍 <span class="thumbs-count">12</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                <!-- Blog Tab -->
+                <div class="content-section" id="blog">
+                    <div class="blog-post">
+                        <div class="blog-header">
+                            <h2 class="blog-title">A Quick Note from lvl1human</h2>
+                            <div class="blog-date site-reference">Posted on January 12, 2025</div>
+                        </div>
+                        <img src="profile.jpg" width="300px" height="300px" alt="Blog post image"
+                            class="blog-thumbnail">
+                        <p>
+
+                            Greetings and salutations!
+                            <br /><br />
+                            This is a placeholder post—just a little digital bookmark for what’s to come. Soon, this
+                            space will be filled with stories, ideas, and maybe a bit of quiet chaos that reflects
+                            the
+                            way I see the world. Until then, let this stand as a promise: the words are coming.
+                            <br /><br />
+                            Stay tuned. More human than human.
+                            <br /><br />
+                            -lvl1human
+                        </p>
+                    </div>
+                    <div class="blog-post">
+                        <div class="blog-header">
+                            <h2 class="blog-title">Under Construction</h2>
+                            <div class="blog-date site-reference">Posted on January 5, 2025</div>
+                        </div>
+                        <p>
+
+                            Hey there, wanderer.
+                            <br /><br />
+                            This page is currently under construction, much like most of life itself. For now,
+                            imagine
+                            the scaffolding of thoughts, half-built sentences, and the occasional spark of
+                            brilliance
+                            waiting to take shape.
+                            <br /><br />
+                            Soon, this space will have something worth your time—or at least a good excuse for a
+                            coffee
+                            break. Until then, take care and keep exploring.
+                            <br /><br />
+                            -lvl1human
+                        </p>
+                    </div>
+                    <div class="blog-post">
+                        <div class="blog-header">
+                            <h2 class="blog-title">Just Passing Through</h2>
+                            <div class="blog-date site-reference">Posted on December 28, 2024</div>
+                        </div>
+                        <img src="waystation.webp" alt="Event photo" class="blog-thumbnail">
+                        <p>Hello, traveler.
+                            <br /><br />
+                            This is just a placeholder, a small waystation on the road to something better. I’m
+                            still
+                            piecing together the ideas and inspiration that will eventually live here. Think of it
+                            as a
+                            quiet pause before the conversation starts.
+                            <br /><br />
+                            Thanks for stopping by—there’s more on the horizon.
+                            <br /><br />
+                            -lvl1human
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Achievements Tab -->
+                <div class="content-section" id="achievements">
+                    <div class="achievements-grid">
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🦋</div>
+                            <div class="achievement-title">Social Butterfly</div>
+                            <div class="achievement-description">Made 20+ friends</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">❤️</div>
+                            <div class="achievement-title">Well Liked</div>
+                            <div class="achievement-description">Received 50+ profile likes</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">📝</div>
+                            <div class="achievement-title">Blogger</div>
+                            <div class="achievement-description">Published 10+ blog posts</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🎮</div>
+                            <div class="achievement-title">Gamer</div>
+                            <div class="achievement-description">Reached Level 10</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🌟</div>
+                            <div class="achievement-title">Popular</div>
+                            <div class="achievement-description">Received 100+ gifts</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">📸</div>
+                            <div class="achievement-title">Photographer</div>
+                            <div class="achievement-description">Shared 50+ photos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="room-details-modal" id="room-details-modal" style="display: none;">
+        <div class="room-details-content">
+            <div class="room-details-modal-header">
+                <div>
+                    <h1 class="room-details-room-title">General Chat</h1>
+                    <div class="room-details-room-meta">
+                        👥 2,458 members • Created January 1, 2025
+                    </div>
+                </div>
+                <button class="close-button">&times;</button>
+            </div>
+
+            <div class="room-details-modal-content">
+
+                <div class="room-details-content-section">
+                    <h2>Topic</h2>
+                    <p>Feel free to discuss any topic, share your thoughts, and meet new friends!</p>
+                </div>
+
+                <div class="room-details-content-section">
+                    <h2>About this Room</h2>
+                    <p>Welcome to General Chat, the heart of our community! This is a space where ideas flow freely,
+                        connections are made, and conversations span from lighthearted banter to meaningful
+                        discussions.
+                        Whether you're here to share a laugh, seek advice, or simply unwind, you'll find a welcoming
+                        group of people ready to chat. Dive in and be part of the conversation—your voice matters
+                        here!
+                    </p>
+                </div>
+
+                <div class="room-details-content-section">
+                    <h2>Room Rules</h2>
+                    <ul class="room-details-rules-list">
+                        <li>Be respectful to all members</li>
+                        <li>No spam or self-promotion without permission</li>
+                        <li>Keep discussions family-friendly</li>
+                        <li>No hate speech or harassment</li>
+                        <li>Follow the community guidelines</li>
+                        <li>Listen to moderators and staff</li>
+                    </ul>
+                </div>
+
+                <div class="room-details-content-section">
+                    <h2>Room Staff</h2>
+                    <div class="room-details-staff-section">
+                        <div class="room-details-staff-category">
+                            <h3 class="room-details-staff-category-title">Owner</h3>
+                            <div class="room-details-staff-list">
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">lvl</div>
+                                    <span class="room-details-username">
+                                        lvl1human
+                                        <span class="room-details-badge" title="Owner">👑</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="room-details-staff-category">
+                            <h3 class="room-details-staff-category-title">Administrators</h3>
+                            <div class="room-details-staff-list">
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">JD</div>
+                                    <span class="room-details-username">
+                                        JohnDoe
+                                        <span class="room-details-badge" title="Admin">⚡</span>
+                                    </span>
+                                </div>
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">JS</div>
+                                    <span class="room-details-username">
+                                        JaneSmith
+                                        <span class="room-details-badge" title="Admin">⚡</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="room-details-staff-category">
+                            <h3 class="room-details-staff-category-title">Moderators</h3>
+                            <div class="staff-list">
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">BJ</div>
+                                    <span class="room-details-username">
+                                        BobJohnson
+                                        <span class="room-details-badge" title="Moderator">🛡️</span>
+                                    </span>
+                                </div>
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">AS</div>
+                                    <span class="room-details-username">
+                                        AliceSmith
+                                        <span class="room-details-badge" title="Moderator">🛡️</span>
+                                    </span>
+                                </div>
+                                <div class="room-details-staff-member">
+                                    <div class="room-details-avatar">TD</div>
+                                    <span class="room-details-username">
+                                        TomDavis
+                                        <span class="room-details-adge" title="Moderator">🛡️</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        // Message Modal Functionality
+        const messageDetailsModal = document.getElementById('messageDetailsModal');
+        const modalUsername = document.getElementById('modal-username');
+        const modalTime = document.getElementById('modal-time');
+        const modalMessage = document.getElementById('modal-message');
+        const roomManagementModal = document.getElementById('room-management-modal');
+        const dmModal = document.getElementById('dmWindow');
+        let bigProfileModal = document.getElementById('big-profile-modal');
+        let roomDetailsModal = document.getElementById('room-details-modal');
+
+        document.querySelectorAll('.close-button').forEach(button => {
+            button.onclick = function () {
+                // Try to find either type of modal
+                const smallModal = this.closest('.small-modal');
+                const roomModal = this.closest('.room-management-modal');
+                let bigProfileModal = this.closest('.big-profile-modal');
+                let roomDetailsModal = this.closest('.room-details-modal');
+
+
+                // Close whichever one exists
+                if (smallModal) smallModal.style.display = 'none';
+                if (roomModal) roomModal.style.display = 'none';
+                if (bigProfileModal) bigProfileModal.style.display = 'none';
+                if (roomDetailsModal) roomDetailsModal.style.display = 'none';
+            };
+        });
+
+        // Open message details
+        function openDetails(username, time, message) {
+            modalUsername.textContent = username;
+            modalTime.textContent = time;
+            modalMessage.textContent = message;
+            messageDetailsModal.style.display = 'flex';
+        }
+
+        // Add click listeners to Details buttons
+        document.querySelectorAll('.hover-actions button:nth-child(5)').forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const username = 'lvl1human';
+                const time = '2025-01-01 12:34:56';
+                const message = document.querySelectorAll('.message-body')[index].textContent.trim();
+                openDetails(username, time, message);
+            });
+        });
+
+        // Message actions
+        function copyMessage() {
+            navigator.clipboard.writeText(modalMessage.textContent);
+            showPopup('Message successfully copied', 'success');
+        }
+
+        function copyInvite() {
+            navigator.clipboard.writeText(document.getElementById('invite-url').value);
+            showPopup('Message successfully copied', 'success');
+        }
+
+
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Check saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            themeToggle.checked = true;
+        }
+
+        // Theme toggle listener
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+
+        const smallProfileModal = document.getElementById('smallProfileModal');
+        const inviteModal = document.getElementById('inviteModal');
+
+        //Function to open invite modal
+        function openInviteModal() {
+            inviteModal.style.display = 'flex';
+        }
+
+        //Function to close invite modal
+        function openInviteModal() {
+            inviteModal.style.display = 'flex';
+        }
+
+        //Function to close invite modal
+        function openRoomDetailsModal() {
+            roomDetailsModal.style.display = 'flex';
+        }
+
+        //Function to close invite modal
+        function openBigProfileModal() {
+
+            //close and small modals like the small profile modal before opening big profile modal
+            document.querySelectorAll('.small-modal').forEach((modal) => {
+                modal.style.display = "none";
+            })
+
+            bigProfileModal.style.display = 'flex';
+        }
+
+
+        function openRoomManagementModal() {
+            roomManagementModal.style.display = 'flex';
+            console.log('here')
+        }
+
+        //Function to close invite modal
+        function closeRoomManagementModal() {
+            roomManagementModal.style.display = 'none';
+            console.log
+        }
+
+        function openDMModal() {
+            dmModal.style.display = 'flex';
+            console.log('here')
+        }
+
+        //Function to close invite modal
+        function closeDMModal() {
+            dmModal.style.display = 'none';
+            console.log
+        }
+
+
+
+        //Function to open small profile modal
+
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('avatar')) {
+                document.querySelectorAll('.small-modal').forEach(function (modal) {
+                    modal.style.display = 'none';
+                });
+                openSmallProfileModal(event.target);
+            }
+        });
+
+        function openSmallProfileModal() {
+            smallProfileModal.style.display = 'flex';
+        }
+
+        function closeSmallProfileModal() {
+            smallProfileModal.style.display = 'none';
+        }
+
+        // Mobile sidebar functionality
+        const leftMenuButton = document.getElementById('leftMenuButton');
+        const rightMenuButton = document.getElementById('rightMenuButton');
+        const leftSidebar = document.querySelector('.left-sidebar');
+        const rightSidebar = document.querySelector('.right-sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+
+        leftMenuButton.addEventListener('click', () => {
+            leftSidebar.classList.toggle('active');
+            rightSidebar.classList.remove('active');
+            overlay.classList.toggle('active');
+        });
+
+        rightMenuButton.addEventListener('click', () => {
+            rightSidebar.classList.toggle('active');
+            leftSidebar.classList.remove('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            leftSidebar.classList.remove('active');
+            rightSidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                leftSidebar.classList.remove('active');
+                rightSidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // Initialize input handlers
+        document.querySelector('.message-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                console.log('Message sent:', this.value);
+                this.value = '';
+            }
+        });
+
+        document.querySelector('.send-button').addEventListener('click', function () {
+            const input = document.querySelector('.message-input');
+            console.log('Message sent:', input.value);
+            input.value = '';
+        });
+
+        // Pinned messages functionality
+        function openPinnedMessages() {
+            document.getElementById('pinnedMessagesModal').style.display = 'flex';
+        }
+
+        function closePinnedMessages() {
+            document.getElementById('pinnedMessagesModal').style.display = 'none';
+        }
+
+        // Message Details functionality
+        function openMessageDetails() {
+            document.getElementById('messageDetailsModal').style.display = 'flex';
+        }
+
+        function closeMessageDetails() {
+            document.getElementById('messageDetailsModal').style.display = 'none';
+        }
+
+        //popup message
+        function showPopup(message, type) {
+            const container = document.getElementById('popup-container');
+            const popup = document.createElement('div');
+            popup.classList.add('popup', type);
+
+            const emoji = document.createElement('span');
+            emoji.classList.add('emoji');
+            emoji.textContent = getEmoji(type);
+            popup.appendChild(emoji);
+
+            const messageElement = document.createElement('span');
+            messageElement.classList.add('message');
+            messageElement.textContent = message;
+            popup.appendChild(messageElement);
+
+            const closeButton = document.createElement('span');
+            closeButton.classList.add('close');
+            closeButton.textContent = '×';
+            closeButton.addEventListener('click', () => {
+                container.removeChild(popup);
+            });
+            popup.appendChild(closeButton);
+
+            const progress = document.createElement('div');
+            progress.classList.add('progress');
+            popup.appendChild(progress);
+
+            container.appendChild(popup);
+
+            setTimeout(() => {
+                container.removeChild(popup);
+            }, 3500);
+        }
+
+        function getEmoji(type) {
+            switch (type) {
+                case 'error':
+                    return '❌';
+                case 'warning':
+                    return '⚠️';
+                case 'info':
+                    return 'ℹ️';
+                case 'success':
+                    return '✅';
+                default:
+                    return '';
+            }
+        }
+
+        // Not implemented event handler
+        function notImplemented() {
+            showPopup('Feature not implemented', 'warning');
+        }
+
+        // Thumbs up a message
+        function likeMessage(button) {
+            const messageContainer = button.closest('.message-container'); // Find the parent message container
+            const reactionsDiv = messageContainer.querySelector('.reactions'); // Locate the reactions div
+            let thumbsUpSpan = reactionsDiv.querySelector('.thumbs-up'); // Check if thumbs-up already exists
+
+            if (!thumbsUpSpan) {
+                // If no thumbs-up span exists, create it
+                thumbsUpSpan = document.createElement('span');
+                thumbsUpSpan.classList.add('thumbs-up');
+                thumbsUpSpan.textContent = '👍 1'; // Start with a count of 1
+                reactionsDiv.appendChild(thumbsUpSpan);
+            } else {
+                // If thumbs-up span exists, increment the count
+                let currentCount = parseInt(thumbsUpSpan.textContent.split(' ')[1], 10);
+                thumbsUpSpan.textContent = `👍 ${currentCount + 1}`;
+            }
+        }
+
+        // Emoji picker toggle
+
+
+        // Emoji picker toggle and tab functionality
+        document.querySelector('.pick-emoji-button').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const picker = document.querySelector('.emoji-picker-modal');
+            picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+
+            // Position the picker
+            const buttonRect = this.getBoundingClientRect();
+            picker.style.bottom = `${window.innerHeight - buttonRect.top + 10}px`;
+            picker.style.left = `${buttonRect.left}px`;
+        });
+
+        // Tab switching
+        document.querySelectorAll('.picker-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.picker-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.picker-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and its content
+                tab.classList.add('active');
+                const contentType = tab.dataset.tab;
+                const content = document.querySelector(`.picker-content[data-content="${contentType}"]`);
+                if (content) {
+                    content.classList.add('active');
+                }
+            });
+        });
+
+        // Close picker when clicking outside
+        document.addEventListener('click', function (e) {
+            const picker = document.querySelector('.emoji-picker-modal');
+            const button = document.querySelector('.pick-emoji-button');
+            if (!picker.contains(e.target) && e.target !== button) {
+                picker.style.display = 'none';
+            }
+        });
+
+
+        // backgrounds for main messages area controlled through room management modal 
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('select-background')) {
+                const bgPath = e.target.dataset.bg;
+                const messageArea = document.querySelector('.message-area');
+
+                // Add background image and necessary CSS properties
+                messageArea.style.backgroundImage = `url('${bgPath}')`;
+                messageArea.style.backgroundSize = 'cover';
+                messageArea.style.backgroundPosition = 'center';
+                messageArea.style.backgroundRepeat = 'no-repeat';
+
+                // Add class to indicate background image is present
+                messageArea.classList.add('bg-image-text');
+
+                // Close the modal after selection
+                document.getElementById('room-management-modal').style.display = 'none';
+
+                // Optional: Save the selected background to localStorage or send to server
+                localStorage.setItem('selectedBackground', bgPath);
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-background')) {
+                const messageArea = document.querySelector('.message-area');
+
+                // Remove background image and related CSS
+                messageArea.style.backgroundImage = 'none';
+                messageArea.classList.remove('bg-image-text');
+
+                // Remove from localStorage if you're using it
+                localStorage.removeItem('selectedBackground');
+
+                // Close the modal
+                document.getElementById('room-management-modal').style.display = 'none';
+            }
+        });
+
+
+// User dropdown menu functionality
+const userMenuButton = document.querySelector('.user-menu-button');
+const userDropdown = document.querySelector('.user-dropdown');
+
+if (userMenuButton && userDropdown) {
+    userMenuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+        
+        // Position the dropdown
+        const buttonRect = userMenuButton.getBoundingClientRect();
+        userDropdown.style.top = `${buttonRect.bottom}px`;
+        userDropdown.style.left = `${buttonRect.left}px`;
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!userDropdown.contains(e.target) && e.target !== userMenuButton) {
+            userDropdown.style.display = 'none';
+        }
+    });
+
+    // Status options
+    document.querySelectorAll('.status-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.status-option').forEach(opt => 
+                opt.classList.remove('active'));
+            option.classList.add('active');
+        });
+    });
+
+    // Mood update
+    const moodInput = document.querySelector('.mood-input');
+    const moodUpdateBtn = document.querySelector('.mood-update');
+
+    if (moodInput && moodUpdateBtn) {
+        moodUpdateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const mood = moodInput.value.trim();
+            if (mood) {
+                showPopup('Mood updated successfully', 'success');
+                userDropdown.style.display = 'none';
+            }
+        });
+    }
+}
+    </script>
+    <script src="room-management.js"></script>
+    <script src="dm.js"></script>
+    <script src="big-profile.js"></script>
+    <script src="username-color-generator.js"></script>
+</body>
+
+</html>

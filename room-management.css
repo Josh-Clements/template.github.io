@@ -1,0 +1,404 @@
+
+.room-management-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    
+}
+
+/* The actual modal content */
+.room-management-content {
+    background: var(--modal-background);
+    width: 100%;
+    max-width: 1200px;
+    height: 90vh;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Room Management Modal specific header */
+.room-management-content .modal-header {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--input-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-button {
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--message-text-color);
+    border: none;
+    background: none;
+    padding: 5px;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--input-border-color);
+    padding: 0 20px;
+    background: var(--modal-background);
+}
+
+.tab {
+    padding: 15px 20px;
+    cursor: pointer;
+    color: var(--message-text-color);
+    border-bottom: 2px solid transparent;
+    user-select: none;
+}
+
+.tab:hover {
+    color: var(--tab-active-color);
+}
+
+.tab.active {
+    color: var(--tab-active-color);
+    border-bottom-color: var(--tab-active-color);
+}
+
+.tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--username-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="password"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background: var(--background-color);
+    color: var(--message-text-color);
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Staff List Styles */
+.staff-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.staff-member {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 4px;
+    background: var(--button-color);
+    width: calc(33.33% - 10px);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+    background-color: #1496bb;
+}
+
+.staff-info {
+    flex: 1;
+}
+
+.username {
+    color: var(--username-color);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.badge {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    margin-left: 4px;
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    background: var(--background-color);
+    color: var(--message-text-color);
+}
+
+/* Action Buttons */
+.action-buttons {
+    padding: 20px;
+    border-top: 1px solid var(--input-border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--modal-background);
+}
+
+/* Default button style */
+.button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--button-border-color);
+    background: var(--button-color);
+    color: var(--button-text-color);
+}
+
+/* Primary button (Save Changes) */
+.button.primary {
+    background: var(--tab-active-color);
+    color: white;
+    border: none;
+}
+
+/* Warning button (Disable Room) */
+.button.warning {
+    background: #ffcd39;
+    color: #000;
+    border: none;
+}
+
+/* Danger button (Delete Room) */
+.button.danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+/* Loading state */
+.button.loading .loading-spinner {
+    display: inline-block;
+}
+
+
+/* Settings Specific Styles */
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--input-border-color);
+}
+
+.setting-info {
+    flex: 1;
+}
+
+.setting-title {
+    color: var(--username-color);
+    margin-bottom: 4px;
+}
+
+.setting-description {
+    font-size: 14px;
+    color: var(--message-text-color);
+}
+
+.setting-control {
+    margin-left: 20px;
+}
+
+/* Logs Specific Styles */
+.log-entry {
+    padding: 12px;
+    border-bottom: 1px solid var(--input-border-color);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.log-icon {
+    font-size: 20px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.log-content {
+    flex: 1;
+}
+
+.log-timestamp {
+    font-size: 12px;
+    color: var(--message-text-color);
+}
+
+/* Banned Users Specific Styles */
+.banned-user {
+    background: var(--button-color);
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.ban-info {
+    flex: 1;
+}
+
+.ban-reason {
+    margin: 5px 0;
+}
+
+.ban-meta {
+    font-size: 12px;
+    color: var(--message-text-color);
+}
+
+.ban-actions {
+    display: flex;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .room-management-modal {
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0;
+    }
+
+    .tab {
+        padding: 15px;
+    }
+
+    .staff-member {
+        width: 100%;
+    }
+
+    .banned-user {
+        flex-direction: column;
+    }
+
+    .ban-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .room-management-content {
+        background: var(--modal-background);
+        width: 100%;
+        max-width: 1200px;
+        height: 100vh;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .room-management-content {
+        width: 90%;
+        height: 80vh;
+    }
+
+    .staff-member {
+        width: calc(50% - 10px); /* 2 columns instead of 3 */
+    }
+
+    .tabs {
+        padding: 0 15px;
+    }
+
+    .tab {
+        padding: 12px 15px;
+    }
+
+    .banned-user {
+        padding: 12px;
+    }
+
+    /* Adjust form elements for better touch targets */
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="password"],
+    .form-group select,
+    .form-group textarea {
+        padding: 12px;
+    }
+
+    .button {
+        padding: 10px 20px;
+    }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--background-color);
+    border-top: 2px solid var(--tab-active-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.button.loading .loading-spinner {
+    display: inline-block;
+}

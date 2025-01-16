@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal as Page</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .backdrop.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Home Page</h1>
+    <button data-userid="123" class="openModal">Open Profile 123</button>
+    <button data-userid="456" class="openModal">Open Profile 456</button>
+
+    <div id="backdrop" class="backdrop"></div>
+    <div id="modal" class="modal">
+        <h2>User Profile</h2>
+        <p id="modalContent"></p>
+        <button id="closeModal">Close Modal</button>
+    </div>
+
+    <script>
+        const modal = document.getElementById('modal');
+        const backdrop = document.getElementById('backdrop');
+        const openModalButtons = document.querySelectorAll('.openModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function openModal(userId) {
+            modal.classList.add('active');
+            backdrop.classList.add('active');
+
+            // Update modal content based on user ID
+            modalContent.textContent = `This is the profile for User ID: ${userId}`;
+
+            // Update the URL to reflect the modal's state
+            history.pushState({ modalOpen: true, userId }, '', `/profiles/${userId}`);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            backdrop.classList.remove('active');
+
+            // Update the URL back to the original
+            history.replaceState({}, '', '/');
+        }
+
+        // Open modal on button click
+        openModalButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const userId = event.target.getAttribute('data-userid');
+                openModal(userId);
+            });
+        });
+
+        // Close modal on button click
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking the backdrop
+        backdrop.addEventListener('click', closeModal);
+
+        // Handle the back/forward buttons
+        window.addEventListener('popstate', (event) => {
+            if (event.state?.modalOpen) {
+                openModal(event.state.userId);
+            } else {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
